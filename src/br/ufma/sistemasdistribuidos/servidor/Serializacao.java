@@ -7,44 +7,31 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 public class Serializacao {
-	
-	ObjectOutputStream output;
-	ObjectInputStream input;
-	OutputStream fluxodesaida;
-	InputStream fluxodeentrada;
-	
-	public Serializacao(OutputStream fluxodesaida, InputStream fluxodeentrada) {
-		super();
-		this.fluxodesaida = fluxodesaida;
-		this.fluxodeentrada = fluxodeentrada;
+
+	public static void serializa(OutputStream fluxodesaida, Object object){
+		ObjectOutputStream output;
+		try {
+			output = new ObjectOutputStream(fluxodesaida);
+			output.reset();
+			output.writeObject(object);
+			output.flush();
+			output.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public void serializa(Object object,OutputStream fluxo){
-		
+	public static <T>T deserializa(InputStream fluxodeentrada) {
+		ObjectInputStream input;
+		T result = null;
 		try {
-			this.output =  new ObjectOutputStream(fluxo);
-	        output.writeObject(object);
-	        output.flush();
-	        output.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			input = new ObjectInputStream(fluxodeentrada);
+			result = (T)input.readObject();
+			//input.close();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		
-	}
-	
-	public Object deserializa(InputStream fluxo) throws ClassNotFoundException, IOException{
-		try {
-			this.input = new ObjectInputStream(fluxo);
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-		return input.readObject();
+		return result;
 	}
 
 }

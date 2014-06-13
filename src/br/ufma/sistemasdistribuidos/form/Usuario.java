@@ -2,7 +2,7 @@ package br.ufma.sistemasdistribuidos.form;
 
 import java.io.Serializable;
 
-public class Usuario implements Serializable {
+public class Usuario implements Serializable,IUsuario {
 
 	private Integer idusuario;
 	
@@ -12,30 +12,37 @@ public class Usuario implements Serializable {
 	
 	private String senha;
 
+	@Override
 	public Integer getIdusuario() {
 		return idusuario;
 	}
 
+	@Override
 	public void setIdusuario(Integer idusuario) {
 		this.idusuario = idusuario;
 	}
 
+	@Override
 	public String getNome() {
 		return nome;
 	}
 
+	@Override
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
 
+	@Override
 	public String getLogin() {
 		return login;
 	}
 
+	@Override
 	public void setLogin(String login) {
 		this.login = login;
 	}
 
+	@Override
 	public String getSenha() {
 		return senha;
 	}
