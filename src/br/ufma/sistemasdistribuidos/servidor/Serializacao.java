@@ -8,26 +8,23 @@ import java.io.OutputStream;
 
 public class Serializacao {
 
-	public static void serializa(OutputStream fluxodesaida, Object object){
-		ObjectOutputStream output;
+	public static void serializa(ObjectOutputStream output, Object object){
+	
 		try {
-			output = new ObjectOutputStream(fluxodesaida);
+			
 			output.reset();
 			output.writeObject(object);
 			output.flush();
-			output.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public static <T>T deserializa(InputStream fluxodeentrada) {
-		ObjectInputStream input;
+	public static <T>T deserializa(ObjectInputStream input) {
 		T result = null;
 		try {
-			input = new ObjectInputStream(fluxodeentrada);
-			result = (T)input.readObject();
-			//input.close();
+			T readObject = (T)input.readObject();
+			result = readObject;
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

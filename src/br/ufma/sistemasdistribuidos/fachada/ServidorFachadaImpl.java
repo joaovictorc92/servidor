@@ -3,6 +3,7 @@ package br.ufma.sistemasdistribuidos.fachada;
 import br.ufma.sistemadistribuidos.dao.UsuarioDAO;
 import br.ufma.sistemadistribuidos.dao.UsuarioDAOImpl;
 import br.ufma.sistemasdistribuidos.form.IUsuario;
+import br.ufma.sistemasdistribuidos.form.Usuario;
 
 public class ServidorFachadaImpl implements ServidorFachada{
        
@@ -11,7 +12,7 @@ public class ServidorFachadaImpl implements ServidorFachada{
 		 usuarioDAO = new UsuarioDAOImpl();
 	 }
 	 @Override
-	public IUsuario buscarUsuario(String login,String senha) throws Exception{
+	public Usuario buscarUsuario(String login,String senha) throws Exception{
 		 
 			return usuarioDAO.buscarUsuario(login, senha);
 		

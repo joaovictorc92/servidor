@@ -18,4 +18,8 @@ public interface IUsuario {
 
 	public abstract void setSenha(String senha);
 
+	public abstract void setIdconexao(int idconexao);
+
+	public abstract int getIdconexao();
+
 }

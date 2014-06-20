@@ -11,7 +11,7 @@ import br.ufma.sistemasdistribuidos.form.Usuario;
 public class UsuarioDAOImpl implements UsuarioDAO {
 
 @Override
-public br.ufma.sistemasdistribuidos.form.IUsuario buscarUsuario(String login, String senha) throws Exception {
+public Usuario buscarUsuario(String login, String senha) throws Exception {
 		
 		Usuario usuario = new br.ufma.sistemasdistribuidos.form.Usuario();
 		
@@ -27,6 +27,7 @@ public br.ufma.sistemasdistribuidos.form.IUsuario buscarUsuario(String login, St
 			usuario.setLogin(resultSet.getString("login"));
 			usuario.setNome(resultSet.getString("nome"));
 			usuario.setSenha(resultSet.getString("senha"));
+			usuario.setIdusuario(resultSet.getInt("idusuario"));
 			
 			return usuario;
 		}		

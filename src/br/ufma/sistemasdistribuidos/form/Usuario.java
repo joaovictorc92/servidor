@@ -6,12 +6,24 @@ public class Usuario implements Serializable,IUsuario {
 
 	private Integer idusuario;
 	
+	private int idconexao;
+
 	private String nome;
 	
 	private String login;
 	
 	private String senha;
+    
+	@Override
+	public int getIdconexao() {
+		return idconexao;
+	}
 
+	@Override
+	public void setIdconexao(int idconexao) {
+		this.idconexao = idconexao;
+	}
+	
 	@Override
 	public Integer getIdusuario() {
 		return idusuario;
