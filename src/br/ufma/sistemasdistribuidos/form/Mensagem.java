@@ -3,20 +3,21 @@ package br.ufma.sistemasdistribuidos.form;
 import java.io.Serializable;
 
 public class Mensagem implements Serializable {
-	private int idConeccao;
+	private int idConexao;
 	private int tipo;
 	private Object object;
 	private String mensagemTexto;
+	private int idConeccao;
 
 	public String getMensagemTexto() {
 		return mensagemTexto;
 	}
 
 	public int getIdConeccao() {
-		return idConeccao;
+		return getIdConeccao();
 	}
 
-	public void setIdConeccao(int idConeccao) {
+	public void setIdConeccao(int idConexao) {
 		this.idConeccao = idConeccao;
 	}
 

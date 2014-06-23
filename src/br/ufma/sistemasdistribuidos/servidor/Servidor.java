@@ -7,8 +7,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
+
 import br.ufma.sistemasdistribuidos.fachada.ServidorFachada;
 import br.ufma.sistemasdistribuidos.fachada.ServidorFachadaImpl;
+import br.ufma.sistemasdistribuidos.form.Apresentacao;
 import br.ufma.sistemasdistribuidos.form.IUsuario;
 import br.ufma.sistemasdistribuidos.form.Mensagem;
 import br.ufma.sistemasdistribuidos.form.Usuario;
@@ -30,6 +34,7 @@ public class Servidor {
             
 			servidor = new ServerSocket(12345);
 			System.out.println("\nPorta 12345 aberta!");
+			//Aguarda a requição de um cliente
 			while (true) {
 				cliente = servidor.accept();
 				ObjectInputStream input = new ObjectInputStream(cliente.getInputStream());
@@ -37,6 +42,7 @@ public class Servidor {
 				System.out.println("Nova conexão com o cliente "
 						+ cliente.getInetAddress().getHostAddress());
 				this.idConexao++;
+				//Para cada cliente é criada uma thread
 				new Thread(new EscutaCliente(input,output,idConexao)).start();
 
 			}
@@ -60,15 +66,19 @@ public class Servidor {
 		ObjectOutputStream output;
 		int idConexao;
 		Usuario user;
+		ArrayList<ImageIcon> listaImagens;
+		ArrayList<Apresentacao> listaApresentacoes;
         public EscutaCliente(ObjectInputStream input,ObjectOutputStream output, int idConexao){
         	this.input = input;
         	this.output = output;
         	this.idConexao = idConexao;
+        	listaApresentacoes = new ArrayList<Apresentacao>();
         }
 		
 		@Override
 		public void run() {
 		int tipo = 99;
+		//Enquanto o tipo da mensagem for diferente da mensagem de fechamento do cliente
 		while(tipo!=0){
 			try {
               
@@ -85,38 +95,50 @@ public class Servidor {
 						
 						if((user = fachada.buscarUsuario(usuario.getLogin(), usuario.getSenha()))!=null){
 						    System.out.println("Usuario logado");
-						    
-							usuariosLogados.add((Usuario) user);
-							if(!listaClientes.contains(user))
-								listaClientes.add(output);
+						    listaApresentacoes = fachada.carregarListaApresentacao();
+						    listaClientes.add(output);
+							if(!usuarioExisteNaLista(usuariosLogados, usuario)){
+								
+								usuariosLogados.add((Usuario) user);
+							}
 							msg.setMensagemTexto("Usuário logado");
 							msg.setTipo(2);
 							msg.setObject(user);
-							Serializacao.serializa(output,msg);
+							Serializacao.serializa(output,msg);// envia confirmação de usuario logado
 							msg.setMensagemTexto("Lista de Usuarios");
-							msg.setTipo(4);
-							msg.setObject(usuariosLogados);
+							msg.setTipo(4); // 
+							msg.setObject(usuariosLogados);//envia lista de usuarios logados
 							enviarParaClientes(listaClientes, msg);
+							msg.setTipo(7);
+							msg.setObject(listaApresentacoes);
+							Serializacao.serializa(output, msg);// envia lista de apresentacoes
 						}
 						else{
-							System.out.println("Usuário ou senha não conferem");
 							msg.setTipo(3);
 							msg.setMensagemTexto("Usuário ou senha não conferem");
-							Serializacao.serializa(output,msg);
+							Serializacao.serializa(output,msg); // envia confirmação que não houve login
 							
 						}
 					}
-					if(mensagem.getTipo()==5){
+					if(mensagem.getTipo()==5){// mensagem para fazer o logout
 						if(usuariosLogados.contains(user)){
-							usuariosLogados.remove(user);
+							usuariosLogados.remove(user); //Retira da lista de usuarios logados
 							msg.setTipo(6);
 							msg.setMensagemTexto("Usuario deslogado com sucesso");
 							Serializacao.serializa(output,msg);
 							msg.setMensagemTexto("Lista de Usuarios");
 							msg.setTipo(4);
 							msg.setObject(usuariosLogados);
-							enviarParaClientes(listaClientes, msg);
+							enviarParaClientes(listaClientes, msg); //envia a lista novamente dos usuarios logados
+							msg.setTipo(7);
+						    
 						}	
+					}
+					if(mensagem.getTipo()==8){ // envia a apresentação com a lista de imagens
+						listaImagens = fachada.carregarApresentacacao((int)mensagem.getObject());
+						msg.setTipo(9);
+						msg.setObject(listaImagens);
+						Serializacao.serializa(output, msg);
 					}
 				}
 
@@ -131,6 +153,15 @@ public class Servidor {
 		
 	 }
 
+	}
+	
+	public boolean usuarioExisteNaLista(ArrayList<Usuario> listaLogados,IUsuario usuario){
+		for(Usuario u : listaLogados){
+			if(u.getLogin().contains(usuario.getLogin()))
+               return true;			
+		}
+		
+		return false;
 	}
 
 	public static void main(String[] args) throws Exception {

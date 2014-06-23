@@ -1,4 +1,4 @@
-package br.ufma.sistemadistribuidos.dao;
+package br.ufma.sistemasdistribuidos.dao;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -1,4 +1,4 @@
-package br.ufma.sistemadistribuidos.dao;
+package br.ufma.sistemasdistribuidos.dao;
 
 import br.ufma.sistemasdistribuidos.form.IUsuario;
 import br.ufma.sistemasdistribuidos.form.Usuario;
