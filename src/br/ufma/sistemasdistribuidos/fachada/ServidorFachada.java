@@ -4,14 +4,12 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 
-import br.ufma.sistemasdistribuidos.form.Usuario;
+import br.ufma.sistemasdistribuidos.form.IUsuario;
 import br.ufma.sistemasdistribuidos.form.Apresentacao;
 
 public interface ServidorFachada {
 
-	public abstract boolean isLoginValido(String login) throws Exception;
-
-	public abstract Usuario buscarUsuario(String login, String senha)
+	public abstract IUsuario buscarUsuario(String login, String senha)
 			throws Exception;
 
 	public abstract ArrayList<Apresentacao> carregarListaApresentacao() throws SQLException;

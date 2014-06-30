@@ -5,15 +5,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import br.ufma.sistemasdistribuidos.conexao.Conexao;
 import br.ufma.sistemasdistribuidos.form.IUsuario;
-import br.ufma.sistemasdistribuidos.form.Usuario;
 
 
 public class UsuarioDAOImpl implements UsuarioDAO {
 
 @Override
-public Usuario buscarUsuario(String login, String senha) throws Exception {
+public IUsuario buscarUsuario(String login, String senha) throws Exception {
 		
-		Usuario usuario = new br.ufma.sistemasdistribuidos.form.Usuario();
+		IUsuario usuario = new br.ufma.sistemasdistribuidos.form.Usuario();
 		
 		PreparedStatement statement = Conexao.get().prepareStatement("SELECT * FROM " +
 				"usuario WHERE login = ? AND senha = ?;");
@@ -38,35 +37,6 @@ public Usuario buscarUsuario(String login, String senha) throws Exception {
 	}	
 	
 	
-	
-@Override
-public boolean isLoginValido(String login) throws Exception {
-		
-		PreparedStatement statement = Conexao.get().prepareStatement("SELECT * FROM " +
-				"usuario WHERE login = ? ");
-		statement.setString(1, login);
-		
-		ResultSet resultSet = statement.executeQuery();
-		
-		if (resultSet.next()) return false;
-		else return true;
-				
-    }
 
-@Override
-public void inserirUsuario(IUsuario usuario){
-	try {
-		PreparedStatement statement = Conexao.get().prepareStatement("INSERT INTO usuario(nome,login,senha) values (?,?,?)");
-		statement.setString(1, usuario.getNome());
-		statement.setString(2, usuario.getLogin());
-		statement.setString(3, usuario.getSenha());
-		statement.executeUpdate();
-		statement.close();
-		System.out.println("Usuario inserido");
-	} catch (SQLException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-}
 
 }

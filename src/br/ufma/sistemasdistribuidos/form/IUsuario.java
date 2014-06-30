@@ -2,6 +2,8 @@ package br.ufma.sistemasdistribuidos.form;
 
 public interface IUsuario {
 
+	
+
 	public abstract String getSenha();
 	
 	public abstract void setLogin(String login);
@@ -21,5 +23,13 @@ public interface IUsuario {
 	public abstract void setIdconexao(int idconexao);
 
 	public abstract int getIdconexao();
+
+	public abstract void setIp(String ip);
+
+	public abstract String getIp();
+
+	public abstract void setPorta(int porta);
+
+	public abstract int getPorta();
 
 }

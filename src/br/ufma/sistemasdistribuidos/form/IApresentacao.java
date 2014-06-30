@@ -14,4 +14,8 @@ public interface IApresentacao {
 
 	public abstract Integer getIdapresentacao();
 
+	public abstract void setPalestrante(IUsuario palestrante);
+
+	public abstract IUsuario getPalestrante();
+
 }

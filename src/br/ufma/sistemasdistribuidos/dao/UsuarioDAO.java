@@ -1,15 +1,12 @@
 package br.ufma.sistemasdistribuidos.dao;
 
 import br.ufma.sistemasdistribuidos.form.IUsuario;
-import br.ufma.sistemasdistribuidos.form.Usuario;
 
 public interface UsuarioDAO {
 
-	public boolean isLoginValido(String login) throws Exception;
 
-	public Usuario buscarUsuario(String login, String senha)
+	public IUsuario buscarUsuario(String login, String senha)
 			throws Exception;
 
-	public abstract void inserirUsuario(IUsuario usuario);
 
 }

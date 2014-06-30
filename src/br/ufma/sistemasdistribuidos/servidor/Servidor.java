@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import br.ufma.sistemasdistribuidos.fachada.ServidorFachada;
 import br.ufma.sistemasdistribuidos.fachada.ServidorFachadaImpl;
 import br.ufma.sistemasdistribuidos.form.Apresentacao;
+import br.ufma.sistemasdistribuidos.form.IApresentacao;
 import br.ufma.sistemasdistribuidos.form.IUsuario;
 import br.ufma.sistemasdistribuidos.form.Mensagem;
 import br.ufma.sistemasdistribuidos.form.Usuario;
@@ -22,18 +23,26 @@ public class Servidor {
 	Socket cliente;
 	ArrayList<Usuario> usuariosLogados;
 	ArrayList<ObjectOutputStream> listaClientes;
+	ArrayList<Apresentacao> listaApresentacoes;
+	ArrayList<Apresentacao> listaApresentacoesAndamento;
 	IUsuario usuario;
 	ServidorFachada fachada;
 	int idConexao;
+	String ip;
+	int porta;
 
 	public Servidor() {
 		this.idConexao = 0;
         usuariosLogados = new ArrayList<Usuario>();
         listaClientes = new ArrayList<ObjectOutputStream>();
+        listaApresentacoes = new ArrayList<Apresentacao>();
+    	listaApresentacoesAndamento = new ArrayList<Apresentacao>();
+    	ip = new String();
 		try {
             
 			servidor = new ServerSocket(12345);
 			System.out.println("\nPorta 12345 aberta!");
+			porta = 12345;
 			//Aguarda a requição de um cliente
 			while (true) {
 				cliente = servidor.accept();
@@ -43,7 +52,9 @@ public class Servidor {
 						+ cliente.getInetAddress().getHostAddress());
 				this.idConexao++;
 				//Para cada cliente é criada uma thread
-				new Thread(new EscutaCliente(input,output,idConexao)).start();
+				ip = cliente.getInetAddress().getHostAddress();
+				porta++;
+				new Thread(new EscutaCliente(input,output,idConexao,ip,porta)).start();
 
 			}
 			
@@ -54,7 +65,16 @@ public class Servidor {
 
 	}
     
+	public boolean contemApresentacao(ArrayList<Apresentacao> lista,int idApresentacao){
+		for(IApresentacao a: lista){
+			if(a.getIdapresentacao()==idApresentacao)
+				return true;
+		}
+		return false;
+	}
+	
 	public void enviarParaClientes(ArrayList<ObjectOutputStream> listaClientes, Object object){
+		
 		for(ObjectOutputStream output : listaClientes){
 			Serializacao.serializa(output, object);
 		}
@@ -65,20 +85,23 @@ public class Servidor {
 		ObjectInputStream input;
 		ObjectOutputStream output;
 		int idConexao;
-		Usuario user;
+		IUsuario user;
 		ArrayList<ImageIcon> listaImagens;
-		ArrayList<Apresentacao> listaApresentacoes;
-        public EscutaCliente(ObjectInputStream input,ObjectOutputStream output, int idConexao){
+		String ip;
+		int porta;
+        public EscutaCliente(ObjectInputStream input,ObjectOutputStream output, int idConexao,String ip,int porta){
         	this.input = input;
         	this.output = output;
         	this.idConexao = idConexao;
-        	listaApresentacoes = new ArrayList<Apresentacao>();
+        	this.ip = ip;
+        	this.porta = porta;
         }
 		
 		@Override
 		public void run() {
 		int tipo = 99;
 		//Enquanto o tipo da mensagem for diferente da mensagem de fechamento do cliente
+		Mensagem msg =  new Mensagem();
 		while(tipo!=0){
 			try {
               
@@ -87,13 +110,15 @@ public class Servidor {
 				if (mensagem != null) {
 					tipo = mensagem.getTipo();
 					System.out.println(mensagem.getTipo());
-					Mensagem msg =  new Mensagem();
+					
 					if (mensagem.getTipo() == 1) {  // Tipo login
 						usuario = (IUsuario) mensagem.getObject();
 						fachada = new ServidorFachadaImpl();
 						
 						
 						if((user = fachada.buscarUsuario(usuario.getLogin(), usuario.getSenha()))!=null){
+							user.setIp(ip);
+							user.setPorta(porta);
 						    System.out.println("Usuario logado");
 						    listaApresentacoes = fachada.carregarListaApresentacao();
 						    listaClientes.add(output);
@@ -112,6 +137,9 @@ public class Servidor {
 							msg.setTipo(7);
 							msg.setObject(listaApresentacoes);
 							Serializacao.serializa(output, msg);// envia lista de apresentacoes
+							msg.setTipo(10);
+							msg.setObject(listaApresentacoesAndamento);
+							enviarParaClientes(listaClientes, msg);
 						}
 						else{
 							msg.setTipo(3);
@@ -130,14 +158,46 @@ public class Servidor {
 							msg.setTipo(4);
 							msg.setObject(usuariosLogados);
 							enviarParaClientes(listaClientes, msg); //envia a lista novamente dos usuarios logados
-							msg.setTipo(7);
-						    
 						}	
 					}
 					if(mensagem.getTipo()==8){ // envia a apresentação com a lista de imagens
-						listaImagens = fachada.carregarApresentacacao((int)mensagem.getObject());
-						msg.setTipo(9);
-						msg.setObject(listaImagens);
+						int idApresentacao = mensagem.getIdApresentacao();
+						if(!contemApresentacao(listaApresentacoesAndamento, idApresentacao)){
+							listaImagens = fachada.carregarApresentacacao(idApresentacao);
+							usuario = (IUsuario) mensagem.getObject();
+							System.out.println("IP do Usuario:"+usuario.getIp()+"Porta:"+usuario.getPorta());
+							listaApresentacoes.get(idApresentacao-1).setPalestrante((IUsuario) usuario);
+							listaApresentacoesAndamento.add(listaApresentacoes.get(idApresentacao-1));
+							msg.setTipo(9);
+							msg.setIdApresentacao(idApresentacao);
+							msg.setObject(listaImagens);
+							Serializacao.serializa(output, msg);
+							msg.setTipo(10);
+							msg.setObject(listaApresentacoesAndamento);
+							enviarParaClientes(listaClientes, msg);
+							msg.setTipo(12);
+							msg.setObject(usuario);
+							Serializacao.serializa(output, msg);
+						}
+					}
+					if(mensagem.getTipo()==11){
+						for(int i=0;i<listaApresentacoesAndamento.size();i++){
+							if(listaApresentacoesAndamento.get(i).getIdapresentacao()==mensagem.getIdApresentacao()){
+								listaApresentacoesAndamento.remove(i);
+								i--;
+							}
+						}
+						msg.setTipo(10);
+						msg.setObject(listaApresentacoesAndamento);
+						enviarParaClientes(listaClientes, msg);
+						msg.setTipo(16);
+						Serializacao.serializa(output, msg);
+					}
+					if(mensagem.getTipo()==14){
+						int idApresentacao = mensagem.getIdApresentacao();
+						Apresentacao apresentacao = listaApresentacoesAndamento.get(idApresentacao-1);
+						msg.setTipo(15);
+						msg.setObject(apresentacao.getPalestrante());
 						Serializacao.serializa(output, msg);
 					}
 				}
@@ -150,13 +210,14 @@ public class Servidor {
 			
 		}
 		listaClientes.remove(output);
-		
+		msg.setTipo(13);
+		Serializacao.serializa(output, msg);
 	 }
 
 	}
 	
 	public boolean usuarioExisteNaLista(ArrayList<Usuario> listaLogados,IUsuario usuario){
-		for(Usuario u : listaLogados){
+		for(IUsuario u : listaLogados){
 			if(u.getLogin().contains(usuario.getLogin()))
                return true;			
 		}

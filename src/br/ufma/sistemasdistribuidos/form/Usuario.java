@@ -13,7 +13,31 @@ public class Usuario implements Serializable,IUsuario {
 	private String login;
 	
 	private String senha;
+	
+	private String ip;
+	
+	private int porta;
     
+	@Override
+	public int getPorta() {
+		return porta;
+	}
+
+	@Override
+	public void setPorta(int porta) {
+		this.porta = porta;
+	}
+
+	@Override
+	public String getIp() {
+		return ip;
+	}
+
+	@Override
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+
 	@Override
 	public int getIdconexao() {
 		return idconexao;

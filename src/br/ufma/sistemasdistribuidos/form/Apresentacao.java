@@ -7,6 +7,16 @@ public class Apresentacao implements IApresentacao,Serializable {
 	private Integer idapresentacao;
 	private String nome;
 	private String caminho;
+	private IUsuario palestrante;
+	
+	@Override
+	public IUsuario getPalestrante() {
+		return palestrante;
+	}
+	@Override
+	public void setPalestrante(IUsuario palestrante) {
+		this.palestrante = palestrante;
+	}
 	@Override
 	public Integer getIdapresentacao() {
 		return idapresentacao;

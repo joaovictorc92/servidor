@@ -7,18 +7,20 @@ public class Mensagem implements Serializable {
 	private int tipo;
 	private Object object;
 	private String mensagemTexto;
-	private int idConeccao;
+	private int idApresentacao;
+    
+	
+	
+	public int getIdApresentacao() {
+		return idApresentacao;
+	}
+
+	public void setIdApresentacao(int idApresentacao) {
+		this.idApresentacao = idApresentacao;
+	}
 
 	public String getMensagemTexto() {
 		return mensagemTexto;
-	}
-
-	public int getIdConeccao() {
-		return getIdConeccao();
-	}
-
-	public void setIdConeccao(int idConexao) {
-		this.idConeccao = idConeccao;
 	}
 
 	public void setMensagemTexto(String mensagemTexto) {

@@ -6,6 +6,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
+import javax.swing.JOptionPane;
+
 public class Serializacao {
 
 	public static void serializa(ObjectOutputStream output, Object object){
@@ -26,6 +28,7 @@ public class Serializacao {
 			T readObject = (T)input.readObject();
 			result = readObject;
 		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "AQUI");
 			e.printStackTrace();
 		}
 		return result;
