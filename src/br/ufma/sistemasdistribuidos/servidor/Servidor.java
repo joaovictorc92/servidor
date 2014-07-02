@@ -180,7 +180,7 @@ public class Servidor {
 							Serializacao.serializa(output, msg);
 						}
 					}
-					if(mensagem.getTipo()==11){
+					if(mensagem.getTipo()==11){//Caso o plestrante fechar a apresentação, exclui apresentação em andamento da lista de apresentações em andamento
 						for(int i=0;i<listaApresentacoesAndamento.size();i++){
 							if(listaApresentacoesAndamento.get(i).getIdapresentacao()==mensagem.getIdApresentacao()){
 								listaApresentacoesAndamento.remove(i);
@@ -193,7 +193,7 @@ public class Servidor {
 						msg.setTipo(16);
 						Serializacao.serializa(output, msg);
 					}
-					if(mensagem.getTipo()==14){
+					if(mensagem.getTipo()==14){// envia apresentação em andamento
 						int idApresentacao = mensagem.getIdApresentacao();
 						Apresentacao apresentacao = listaApresentacoesAndamento.get(idApresentacao-1);
 						msg.setTipo(15);
@@ -210,13 +210,20 @@ public class Servidor {
 			
 		}
 		listaClientes.remove(output);
-		msg.setTipo(13);
+		msg.setTipo(13); //envia mensagem de confirmação de cliente se desconectando
 		Serializacao.serializa(output, msg);
+		try {
+			output.close();
+			cliente.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	 }
 
 	}
 	
-	public boolean usuarioExisteNaLista(ArrayList<Usuario> listaLogados,IUsuario usuario){
+	public boolean usuarioExisteNaLista(ArrayList<Usuario> listaLogados,IUsuario usuario){// Se usuário existe na lista de logados
 		for(IUsuario u : listaLogados){
 			if(u.getLogin().contains(usuario.getLogin()))
                return true;			
@@ -227,8 +234,6 @@ public class Servidor {
 
 	public static void main(String[] args) throws Exception {
 
-		// ServidorFachada servidor = new ServidorFachadaImpl();
-		// servidor.buscarUsuario("teste","teste");
 		new Servidor();
 
 	}

@@ -10,9 +10,9 @@ import br.ufma.sistemasdistribuidos.form.Apresentacao;
 
 public interface ApresentacaoDAO {
 
-	public abstract ArrayList<Apresentacao> carregarApresentacoes() throws SQLException;
+	public abstract ArrayList<Apresentacao> carregarApresentacoes() throws SQLException; // Busca as opções de apresentação
 
-	public abstract ArrayList<ImageIcon> carregarApresentacao(int idApresentacao)
+	public abstract ArrayList<ImageIcon> carregarApresentacao(int idApresentacao)// carrega as apresentações
 			throws SQLException;
 
 }
