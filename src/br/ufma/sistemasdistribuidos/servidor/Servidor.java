@@ -27,12 +27,8 @@ public class Servidor {
 	ArrayList<Apresentacao> listaApresentacoesAndamento;
 	IUsuario usuario;
 	ServidorFachada fachada;
-	int idConexao;
 	String ip;
-	int porta;
-
 	public Servidor() {
-		this.idConexao = 0;
         usuariosLogados = new ArrayList<Usuario>();
         listaClientes = new ArrayList<ObjectOutputStream>();
         listaApresentacoes = new ArrayList<Apresentacao>();
@@ -40,21 +36,21 @@ public class Servidor {
     	ip = new String();
 		try {
             
-			servidor = new ServerSocket(12345);
+			servidor = new ServerSocket(12345); // abre o servidor
 			System.out.println("\nPorta 12345 aberta!");
-			porta = 12345;
 			//Aguarda a requição de um cliente
-			while (true) {
+			Porta porta = new Porta();
+			porta.setPorta(12345);
+			while (true) { // espera a requisição de um novo cliente
 				cliente = servidor.accept();
 				ObjectInputStream input = new ObjectInputStream(cliente.getInputStream());
 				ObjectOutputStream output = new ObjectOutputStream(cliente.getOutputStream());
 				System.out.println("Nova conexão com o cliente "
-						+ cliente.getInetAddress().getHostAddress());
-				this.idConexao++;
+						+ cliente.getInetAddress().getLocalHost().getHostAddress()); // imprime o endereço do cliente
+			
 				//Para cada cliente é criada uma thread
 				ip = cliente.getInetAddress().getHostAddress();
-				porta++;
-				new Thread(new EscutaCliente(input,output,idConexao,ip,porta)).start();
+				new Thread(new EscutaCliente(input,output,ip,porta)).start();
 
 			}
 			
@@ -65,7 +61,7 @@ public class Servidor {
 
 	}
     
-	public boolean contemApresentacao(ArrayList<Apresentacao> lista,int idApresentacao){
+	public boolean contemApresentacao(ArrayList<Apresentacao> lista,int idApresentacao){ // Verifica se contém apresentação
 		for(IApresentacao a: lista){
 			if(a.getIdapresentacao()==idApresentacao)
 				return true;
@@ -73,7 +69,7 @@ public class Servidor {
 		return false;
 	}
 	
-	public void enviarParaClientes(ArrayList<ObjectOutputStream> listaClientes, Object object){
+	public void enviarParaClientes(ArrayList<ObjectOutputStream> listaClientes, Object object){// Envia para todos os clientes conectados
 		
 		for(ObjectOutputStream output : listaClientes){
 			Serializacao.serializa(output, object);
@@ -81,15 +77,15 @@ public class Servidor {
 		
 	}
 	
-	private class EscutaCliente implements Runnable {
+	private class EscutaCliente implements Runnable { // Classe responsavel por tratar as requisições do cliente
 		ObjectInputStream input;
 		ObjectOutputStream output;
 		int idConexao;
 		IUsuario user;
 		ArrayList<ImageIcon> listaImagens;
 		String ip;
-		int porta;
-        public EscutaCliente(ObjectInputStream input,ObjectOutputStream output, int idConexao,String ip,int porta){
+        Porta porta;
+        public EscutaCliente(ObjectInputStream input,ObjectOutputStream output,String ip,Porta porta){
         	this.input = input;
         	this.output = output;
         	this.idConexao = idConexao;
@@ -116,10 +112,8 @@ public class Servidor {
 						fachada = new ServidorFachadaImpl();
 						
 						
-						if((user = fachada.buscarUsuario(usuario.getLogin(), usuario.getSenha()))!=null){
+						if((user = fachada.buscarUsuario(usuario.getLogin(), usuario.getSenha()))!=null){ // verifica se o usuário está cadastrado antes de fazer o login
 							user.setIp(ip);
-							user.setPorta(porta);
-						    System.out.println("Usuario logado");
 						    listaApresentacoes = fachada.carregarListaApresentacao();
 						    listaClientes.add(output);
 							if(!usuarioExisteNaLista(usuariosLogados, usuario)){
@@ -165,22 +159,25 @@ public class Servidor {
 						if(!contemApresentacao(listaApresentacoesAndamento, idApresentacao)){
 							listaImagens = fachada.carregarApresentacacao(idApresentacao);
 							usuario = (IUsuario) mensagem.getObject();
-							System.out.println("IP do Usuario:"+usuario.getIp()+"Porta:"+usuario.getPorta());
+							porta.add(); // Incrementa a porta para que um novo palestrante abra a conexão com os ouvintes
+							usuario.setPorta(porta.getPorta());
+							System.out.println("Ip:"+usuario.getIp()+" Porta:"+usuario.getPorta());
 							listaApresentacoes.get(idApresentacao-1).setPalestrante((IUsuario) usuario);
 							listaApresentacoesAndamento.add(listaApresentacoes.get(idApresentacao-1));
-							msg.setTipo(9);
-							msg.setIdApresentacao(idApresentacao);
-							msg.setObject(listaImagens);
-							Serializacao.serializa(output, msg);
-							msg.setTipo(10);
-							msg.setObject(listaApresentacoesAndamento);
-							enviarParaClientes(listaClientes, msg);
 							msg.setTipo(12);
 							msg.setObject(usuario);
 							Serializacao.serializa(output, msg);
+							msg.setTipo(9);
+							msg.setIdApresentacao(idApresentacao);
+							msg.setObject(listaImagens); // envia lista de imagens
+							Serializacao.serializa(output, msg);
+							msg.setTipo(10);
+							msg.setObject(listaApresentacoesAndamento); // envia lista de apresentações em andamento
+							enviarParaClientes(listaClientes, msg);
+							
 						}
 					}
-					if(mensagem.getTipo()==11){//Caso o plestrante fechar a apresentação, exclui apresentação em andamento da lista de apresentações em andamento
+					if(mensagem.getTipo()==11){//Caso o palestrante fechar a apresentação, exclui apresentação em andamento da lista de apresentações em andamento
 						for(int i=0;i<listaApresentacoesAndamento.size();i++){
 							if(listaApresentacoesAndamento.get(i).getIdapresentacao()==mensagem.getIdApresentacao()){
 								listaApresentacoesAndamento.remove(i);
@@ -189,7 +186,7 @@ public class Servidor {
 						}
 						msg.setTipo(10);
 						msg.setObject(listaApresentacoesAndamento);
-						enviarParaClientes(listaClientes, msg);
+						enviarParaClientes(listaClientes, msg); // envia lista de apresentações em andamento
 						msg.setTipo(16);
 						Serializacao.serializa(output, msg);
 					}
@@ -222,6 +219,13 @@ public class Servidor {
 	 }
 
 	}
+	
+	  public class Porta {  
+		   private int porta;  
+		   public synchronized void setPorta(int porta){this.porta = porta; }
+		   public synchronized int getPorta() { return porta; }  
+		   public synchronized void add() { porta++; }  
+		} 
 	
 	public boolean usuarioExisteNaLista(ArrayList<Usuario> listaLogados,IUsuario usuario){// Se usuário existe na lista de logados
 		for(IUsuario u : listaLogados){
